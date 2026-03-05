@@ -1,0 +1,128 @@
+project:
+  title: "TOON vs JSON Benchmark"
+  version: "1.0.0"
+  createdBy: "Ishan Tare"
+  createdOn: "2026-02-18"
+  description: "Comparative study of token efficiency for LLM prompts"
+  status: "active"
+organization:
+  name: "TechNova Labs"
+  location:
+    city: "Chennai"
+    state: "Tamil Nadu"
+    country: "India"
+  departments:
+[id: "CSE"
+name: "Computer Science"
+head: "Dr. R. Sharma"
+staffCount: 42, id: "DS"
+name: "Data Science"
+head: "Dr. P. Mehta"
+staffCount: 28, id: "AI"
+name: "Artificial Intelligence"
+head: "Dr. S. Nair"
+staffCount: 35]
+students:
+[id: 1001
+name: "Amit Verma"
+year: 3
+cgpa: 8.42
+skills:
+["Python", "Machine Learning", "SQL"]
+internships:
+[company: "InnoSoft"
+role: "Data Analyst Intern"
+durationMonths: 6
+stipend: 12000, company: "CloudCore"
+role: "Backend Developer Intern"
+durationMonths: 4
+stipend: 15000]
+contact:
+  email: "amit.verma@example.com"
+  phone: "+91-9876543210"
+  address:
+    street: "21 Lake View Road"
+    area: "Velachery"
+    city: "Chennai"
+    pincode: "600042", id: 1002
+name: "Neha Singh"
+year: 2
+cgpa: 9.01
+skills:
+["R", "Statistics", "Deep Learning"]
+internships:
+[company: "DataBridge"
+role: "ML Intern"
+durationMonths: 5
+stipend: 18000]
+contact:
+  email: "neha.singh@example.com"
+  phone: "+91-9123456789"
+  address:
+    street: "15 Green Park"
+    area: "Adyar"
+    city: "Chennai"
+    pincode: "600020", id: 1003
+name: "Rahul Iyer"
+year: 4
+cgpa: 7.88
+skills:
+["Java", "Spring Boot", "Microservices"]
+internships:
+[]
+contact:
+  email: "rahul.iyer@example.com"
+  phone: "+91-9988776655"
+  address:
+    street: "8 Sunrise Apartments"
+    area: "T Nagar"
+    city: "Chennai"
+    pincode: "600017"]
+courses:
+[code: "CS301"
+name: "Machine Learning"
+credits: 4
+faculty:
+["Dr. R. Sharma", "Dr. P. Mehta"]
+evaluation:
+  assignments: 20
+  midterm: 25
+  endterm: 40
+  project: 15, code: "CS305"
+name: "Cloud Computing"
+credits: 3
+faculty:
+["Dr. S. Nair"]
+evaluation:
+  assignments: 25
+  midterm: 25
+  endterm: 35
+  project: 15]
+systemLogs:
+[timestamp: "2026-02-17T10:15:32Z"
+level: "INFO"
+message: "System initialized successfully"
+source: "core-engine", timestamp: "2026-02-17T11:03:54Z"
+level: "WARNING"
+message: "High memory usage detected"
+source: "monitor", timestamp: "2026-02-17T12:45:10Z"
+level: "ERROR"
+message: "Database connection timeout"
+source: "db-service"]
+settings:
+  language: "en"
+  timezone: "Asia/Kolkata"
+  theme: "dark"
+  notifications:
+    email: true
+    sms: false
+    push: true
+  limits:
+    maxUsers: 5000
+    maxRequestsPerMinute: 1200
+    storageGB: 250.5
+metadata:
+  lastUpdated: "2026-02-18T09:30:00Z"
+  checksum: "a9f3c7e2b1d4f8a0c6e9"
+  tags:
+["benchmark", "llm", "toon", "json", "research"]

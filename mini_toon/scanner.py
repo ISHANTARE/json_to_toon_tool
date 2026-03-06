@@ -1,31 +1,45 @@
+"""
+Scanner for reading TOON text into line objects with depth tracking.
+"""
+
 from dataclasses import dataclass
 
 
 @dataclass
 class Line:
-
     text: str
     depth: int
     number: int
 
 
-def scan(text: str, indent=2):
-
+def scan(text: str, indent: int = 2) -> list[Line]:
+    """
+    Parse a string into a list of Line objects, tracking indentation depth.
+    Empty lines or whitespace-only lines are ignored.
+    """
     lines = []
-    num = 1
-
-    for raw in text.splitlines():
-
+    
+    # Process text line by line
+    raw_lines = text.split('\n')
+    
+    for i, raw in enumerate(raw_lines):
+        # 1-based line number for error reporting
+        num = i + 1
+        
+        # Skip empty or whitespace-only lines
         if not raw.strip():
-            num += 1
             continue
-
-        spaces = len(raw) - len(raw.lstrip(" "))
+            
+        # Count leading spaces
+        spaces = len(raw) - len(raw.lstrip(' '))
+        
+        # Calculate depth (must be uniform based on indent size)
         depth = spaces // indent
-
-        content = raw.strip()
-
+        
+        # We strip leading whitespace but preserve trailing 
+        # (though trailing whitespace usually gets stripped during parsing value)
+        content = raw.lstrip(' ')
+        
         lines.append(Line(content, depth, num))
-        num += 1
 
     return lines

@@ -1,0 +1,12 @@
+[
+  {"id": "EMP-001", "name": "Alice Smith", "department": "Engineering", "role": "Senior Developer", "active": true, "salary": 120000},
+  {"id": "EMP-002", "name": "Bob Johnson", "department": "Engineering", "role": "QA Engineer", "active": true, "salary": 85000},
+  {"id": "EMP-003", "name": "Charlie Brown", "department": "Marketing", "role": "Marketing Specialist", "active": true, "salary": 75000},
+  {"id": "EMP-004", "name": "Diana Ross", "department": "Sales", "role": "Sales Lead", "active": false, "salary": 110000},
+  {"id": "EMP-005", "name": "Evan Wright", "department": "HR", "role": "HR Manager", "active": true, "salary": 95000},
+  {"id": "EMP-006", "name": "Fiona Gallagher", "department": "Engineering", "role": "Frontend Dev", "active": true, "salary": 105000},
+  {"id": "EMP-007", "name": "George Miller", "department": "IT Support", "role": "SysAdmin", "active": true, "salary": 88000},
+  {"id": "EMP-008", "name": "Hannah Abbott", "department": "Sales", "role": "Account Executive", "active": true, "salary": 92000},
+  {"id": "EMP-009", "name": "Ian Malcolm", "department": "Research", "role": "Data Scientist", "active": false, "salary": 135000},
+  {"id": "EMP-010", "name": "Julia Roberts", "department": "Marketing", "role": "CMO", "active": true, "salary": 180000}
+]

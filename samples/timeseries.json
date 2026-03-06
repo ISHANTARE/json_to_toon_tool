@@ -1,0 +1,62 @@
+[
+    {
+        "timestamp": "2023-10-01T00:00:00Z",
+        "metric": "cpu_usage",
+        "value": 45.2,
+        "host": "web-01"
+    },
+    {
+        "timestamp": "2023-10-01T00:00:00Z",
+        "metric": "cpu_usage",
+        "value": 52.8,
+        "host": "web-02"
+    },
+    {
+        "timestamp": "2023-10-01T00:00:00Z",
+        "metric": "cpu_usage",
+        "value": 12.1,
+        "host": "db-01"
+    },
+    {
+        "timestamp": "2023-10-01T00:05:00Z",
+        "metric": "cpu_usage",
+        "value": 48.9,
+        "host": "web-01"
+    },
+    {
+        "timestamp": "2023-10-01T00:05:00Z",
+        "metric": "cpu_usage",
+        "value": 55.4,
+        "host": "web-02"
+    },
+    {
+        "timestamp": "2023-10-01T00:05:00Z",
+        "metric": "cpu_usage",
+        "value": 13.0,
+        "host": "db-01"
+    },
+    {
+        "timestamp": "2023-10-01T00:10:00Z",
+        "metric": "cpu_usage",
+        "value": 50.1,
+        "host": "web-01"
+    },
+    {
+        "timestamp": "2023-10-01T00:10:00Z",
+        "metric": "cpu_usage",
+        "value": 60.2,
+        "host": "web-02"
+    },
+    {
+        "timestamp": "2023-10-01T00:10:00Z",
+        "metric": "cpu_usage",
+        "value": 11.5,
+        "host": "db-01"
+    },
+    {
+        "timestamp": "2023-10-01T00:15:00Z",
+        "metric": "cpu_usage",
+        "value": 47.3,
+        "host": "web-01"
+    }
+]

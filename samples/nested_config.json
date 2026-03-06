@@ -1,0 +1,45 @@
+{
+    "system": {
+        "version": "1.4.2",
+        "environment": "production",
+        "database": {
+            "host": "db.internal.net",
+            "port": 5432,
+            "credentials": {
+                "username": "admin",
+                "secret_key": "vault:production/db/secret"
+            },
+            "pool": {
+                "min_connections": 5,
+                "max_connections": 50,
+                "timeout_ms": 5000
+            }
+        },
+        "features": {
+            "enable_beta": false,
+            "rate_limiting": {
+                "enabled": true,
+                "requests_per_minute": 100,
+                "bypass_ips": [
+                    "192.168.1.1",
+                    "10.0.0.5"
+                ]
+            }
+        },
+        "logging": {
+            "level": "info",
+            "destinations": [
+                {
+                    "type": "file",
+                    "path": "/var/log/app.log",
+                    "rotate_mb": 100
+                },
+                {
+                    "type": "syslog",
+                    "host": "log.internal.net",
+                    "port": 514
+                }
+            ]
+        }
+    }
+}

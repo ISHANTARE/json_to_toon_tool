@@ -1,0 +1,38 @@
+[
+    {
+        "level": "info",
+        "message": "Server started successfully",
+        "timestamp": 1696118400
+    },
+    {
+        "level": "warning",
+        "message": "High memory usage detected",
+        "timestamp": 1696118450,
+        "context": {
+            "free_mb": 150,
+            "total_mb": 8192
+        }
+    },
+    {
+        "level": "error",
+        "message": "Failed to connect to database",
+        "timestamp": 1696118500,
+        "code": "ECONNREFUSED",
+        "retries": 3
+    },
+    {
+        "level": "info",
+        "message": "User login",
+        "timestamp": 1696118600,
+        "user_id": 49201
+    },
+    {
+        "level": "info",
+        "message": "Batch job completed",
+        "timestamp": 1696120000,
+        "context": {
+            "processed": 5000,
+            "failed": 2
+        }
+    }
+]

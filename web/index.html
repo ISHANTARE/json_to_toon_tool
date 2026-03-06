@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOON Converter | Token Optimized Object Notation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="glass-panel main-header">
+            <div class="logo">
+                <span class="gradient-text">TOON</span> Converter
+            </div>
+            <div class="controls">
+                <select id="sampleSelect" class="styled-select">
+                    <option value="">Load Sample Data...</option>
+                </select>
+                <button id="toggleDirectionBtn" class="glass-btn">Switch Direction ⇄</button>
+            </div>
+        </header>
+
+        <main class="editor-grid">
+            <!-- Left Panel (JSON by default) -->
+            <section class="editor-panel glass-panel" id="leftPanel">
+                <div class="panel-header">
+                    <h2 id="leftTitle">Input (JSON)</h2>
+                    <span class="badge" id="leftBadge">Source</span>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea id="leftInput" placeholder="Paste your data here..." spellcheck="false"></textarea>
+                </div>
+                <div class="panel-footer">
+                    <button id="convertBtn" class="primary-btn">Convert ➔</button>
+                </div>
+            </section>
+
+            <!-- Right Panel (TOON by default) -->
+            <section class="editor-panel glass-panel" id="rightPanel">
+                <div class="panel-header">
+                    <h2 id="rightTitle">Output (TOON)</h2>
+                    <span class="badge accent" id="rightBadge">Result</span>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea id="rightOutput" placeholder="Result will appear here..." readonly spellcheck="false"></textarea>
+                </div>
+                <div class="panel-footer loading-state hidden" id="loadingState">
+                    <div class="spinner"></div> Converting...
+                </div>
+            </section>
+        </main>
+
+        <!-- Stats Panel -->
+        <section class="stats-panel glass-panel hidden" id="statsPanel">
+            <!-- Content injected by JS -->
+        </section>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

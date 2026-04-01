@@ -1,10 +1,5 @@
-"""
-Decoder for parsing TOON v3.0 text format into JSON data structures.
-"""
-
 import re
 from typing import Any, Tuple, Optional
-
 from .scanner import scan, Line
 from .strings import unescape
 from .types import DecodeError
@@ -13,8 +8,48 @@ _HEADER_RE = re.compile(
     r'^(?:(?P<key>.*?)\s*)?\[(?P<length>\d+)(?P<delim>[,|\t])?\](?:\{(?P<fields>.*?)\})?\s*$'
 )
 
+def _unflatten_dict(flat_dict: dict) -> dict:
+    """Unflatten a dictionary with dot-notation keys into a nested structure."""
+    if not flat_dict:
+        return {}
+        
+    if not any('.' in str(k) for k in flat_dict.keys()):
+        return flat_dict
+        
+    result = {}
+    for key, value in flat_dict.items():
+        parts = str(key).split('.')
+        current = result
+        
+        for i, part in enumerate(parts[:-1]):
+            next_part = parts[i+1]
+            next_is_list = next_part.isdigit()
+            
+            if isinstance(current, list):
+                idx = int(part)
+                while len(current) <= idx:
+                    current.append([] if next_is_list else {})
+                current = current[idx]
+            else:
+                if part not in current:
+                    current[part] = [] if next_is_list else {}
+                current = current[part]
+                
+        last_part = parts[-1]
+        if isinstance(current, list):
+            idx = int(last_part)
+            while len(current) <= idx:
+                current.append(None)
+            current[idx] = value
+        else:
+            current[last_part] = value
+            
+    return result
 
 def split_delimited(text: str, delimiter: str) -> list[str]:
+    if '"' not in text and '\\' not in text:
+        return [part.strip() for part in text.split(delimiter)]
+
     out = []
     buf = []
     in_quotes = False
@@ -98,14 +133,14 @@ def parse_key(text: str) -> str:
     return text
 
 
-def _parse_array_contents(
+def _parse_array_contents_gen(
     lines: list[Line], 
     start: int, 
     depth: int, 
     length: int, 
     fields: Optional[list[str]], 
     delim: str
-) -> Tuple[list, int]:
+):
     arr = []
     i = start
     
@@ -124,9 +159,13 @@ def _parse_array_contents(
             obj = {}
             for j, field in enumerate(fields):
                 val_text = parts[j] if j < len(parts) else ""
+                # Empty unquoted cell = missing key (sparse tabular array)
+                # Quoted empty string "" is preserved as an actual empty string value
+                if val_text == "":
+                    continue  # skip - key was absent in original object
                 obj[parse_key(field)] = parse_value(val_text)
                 
-            arr.append(obj)
+            arr.append(_unflatten_dict(obj))
             i += 1
             
         return arr, i
@@ -167,12 +206,12 @@ def _parse_array_contents(
         # Try to parse the block or primitive
         if content == '':
             if len(temp_lines) > 1:
-                val, _ = parse_block(temp_lines, 1, depth + 1)
+                val, _ = yield (_parse_block_gen, temp_lines, 1, depth + 1)
                 arr.append(val)
             else:
                 arr.append(None)
         elif ':' in content:
-            val, _ = parse_block(temp_lines, 0, depth + 1)
+            val, _ = yield (_parse_block_gen, temp_lines, 0, depth + 1)
             # Edge case if val is an array but it's anonymous
             if type(val) is dict and len(val) == 1 and '' in val:
                 val = val['']
@@ -186,7 +225,7 @@ def _parse_array_contents(
     return arr, i
 
 
-def parse_block(lines: list[Line], start: int, depth: int) -> Tuple[Any, int]:
+def _parse_block_gen(lines: list[Line], start: int, depth: int):
     obj = {}
     i = start
     is_object = False
@@ -204,13 +243,13 @@ def parse_block(lines: list[Line], start: int, depth: int) -> Tuple[Any, int]:
         
         if ':' not in text:
             # Check if anonymous array header
-            m = _HEADER_RE.match(text)
+            m = _HEADER_RE.match(text) if '[' in text else None
             if m and not m.group('key'):
                 length = int(m.group('length'))
                 delim = m.group('delim') or ','
                 fields_str = m.group('fields')
                 fields = split_delimited(fields_str.strip(), delim) if fields_str else None
-                arr, next_i = _parse_array_contents(lines, i + 1, depth + 1, length, fields, delim)
+                arr, next_i = yield (_parse_array_contents_gen, lines, i + 1, depth + 1, length, fields, delim)
                 
                 # We return it bound to empty string for the list-item hack, or just return array
                 # If we are parsing an anonymous block (from list item), we can just return the array
@@ -227,7 +266,7 @@ def parse_block(lines: list[Line], start: int, depth: int) -> Tuple[Any, int]:
         key_raw = key_raw.strip()
         rest = rest.strip()
         
-        m = _HEADER_RE.match(key_raw)
+        m = _HEADER_RE.match(key_raw) if '[' in key_raw else None
         if m:
             key_str = m.group('key')
             key = parse_key(key_str) if key_str else ''
@@ -243,7 +282,7 @@ def parse_block(lines: list[Line], start: int, depth: int) -> Tuple[Any, int]:
                 i += 1
                 continue
                 
-            arr, i = _parse_array_contents(lines, i + 1, depth + 1, length, fields, delim)
+            arr, i = yield (_parse_array_contents_gen, lines, i + 1, depth + 1, length, fields, delim)
             
             if key:
                 obj[key] = arr
@@ -254,7 +293,7 @@ def parse_block(lines: list[Line], start: int, depth: int) -> Tuple[Any, int]:
         key = parse_key(key_raw)
         
         if not rest:
-            val, i = parse_block(lines, i + 1, depth + 1)
+            val, i = yield (_parse_block_gen, lines, i + 1, depth + 1)
             obj[key] = val
         else:
             obj[key] = parse_value(rest)
@@ -262,6 +301,34 @@ def parse_block(lines: list[Line], start: int, depth: int) -> Tuple[Any, int]:
             
     return obj, i
 
+def trampoline(generator_func, *args):
+    """Executes generator-based recursion on a heap stack to prevent RecursionError."""
+    stack = [generator_func(*args)]
+    return_value = None
+    
+    while stack:
+        try:
+            # Send the return value of the last child generator to the current one
+            call = stack[-1].send(return_value)
+            return_value = None
+            
+            # If the generator yielded a tuple of (func, *args), we push the new generator
+            if isinstance(call, tuple) and call and callable(call[0]):
+                stack.append(call[0](*call[1:]))
+            else:
+                raise DecodeError("Expected a generator function tuple to be yielded")
+        except StopIteration as e:
+            # Generator finished, capture its return value
+            stack.pop()
+            return_value = e.value
+            
+    return return_value
+
+def parse_block(lines: list[Line], start: int, depth: int) -> Tuple[Any, int]:
+    return trampoline(_parse_block_gen, lines, start, depth)
+
+def _parse_array_contents(lines, start, depth, length, fields, delim):
+    return trampoline(_parse_array_contents_gen, lines, start, depth, length, fields, delim)
 
 def decode(text: str) -> Any:
     lines = scan(text)
@@ -277,9 +344,9 @@ def decode(text: str) -> Any:
     first_line = lines[0].text
     if ':' in first_line:
         key_raw, rest = first_line.split(':', 1)
-        m = _HEADER_RE.match(key_raw.strip())
+        m = _HEADER_RE.match(key_raw.strip()) if '[' in key_raw else None
     else:
-        m = _HEADER_RE.match(first_line.strip())
+        m = _HEADER_RE.match(first_line.strip()) if '[' in first_line else None
         rest = ""
 
     if m and not m.group('key'):
@@ -292,10 +359,10 @@ def decode(text: str) -> Any:
             parts = split_delimited(rest.strip(), delim)
             return [parse_value(p) for p in parts]
             
-        arr, pos = _parse_array_contents(lines, 1, 0, length, fields, delim)
+        arr, pos = trampoline(_parse_array_contents_gen, lines, 1, 0, length, fields, delim)
         return arr
 
-    result, pos = parse_block(lines, 0, 0)
+    result, pos = trampoline(_parse_block_gen, lines, 0, 0)
     
     if pos < len(lines):
         raise DecodeError(f"Extra content after root at line {lines[pos].number}")

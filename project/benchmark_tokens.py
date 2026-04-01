@@ -56,34 +56,34 @@ def run_benchmarks(sample_dir="samples", output_csv="benchmark_results.csv"):
         formats_data = {}
 
         # 1. JSON Pretty
-        t0 = time.time()
+        t0 = time.perf_counter()
         json_pretty = json.dumps(data, indent=2)
-        t_json = (time.time() - t0) * 1000
+        t_json = (time.perf_counter() - t0) * 1000
         formats_data["JSON (Pretty)"] = {
             "text": json_pretty, "time": t_json
         }
 
         # 2. JSON Compact
-        t0 = time.time()
+        t0 = time.perf_counter()
         json_compact = json.dumps(data, separators=(',', ':'))
-        t_compact = (time.time() - t0) * 1000
+        t_compact = (time.perf_counter() - t0) * 1000
         formats_data["JSON (Compact)"] = {
             "text": json_compact, "time": t_compact
         }
 
         # 3. YAML
         if has_yaml:
-            t0 = time.time()
+            t0 = time.perf_counter()
             yaml_text = yaml.dump(data, sort_keys=False)
-            t_yaml = (time.time() - t0) * 1000
+            t_yaml = (time.perf_counter() - t0) * 1000
             formats_data["YAML"] = {
                 "text": yaml_text, "time": t_yaml
             }
 
         # 4. TOON
-        t0 = time.time()
+        t0 = time.perf_counter()
         toon_text = mini_toon.encode(data)
-        t_toon = (time.time() - t0) * 1000
+        t_toon = (time.perf_counter() - t0) * 1000
         formats_data["TOON"] = {
             "text": toon_text, "time": t_toon
         }
@@ -124,7 +124,7 @@ def run_benchmarks(sample_dir="samples", output_csv="benchmark_results.csv"):
         writer.writeheader()
         writer.writerows(results)
         
-    print(f"\n✅ Benchmarks complete. Saved full report to '{output_csv}'.")
+    print(f"\n[SUCCESS] Benchmarks complete. Saved full report to '{output_csv}'.")
 
 def main():
     run_benchmarks()

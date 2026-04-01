@@ -12,51 +12,69 @@ def _is_primitive(value: Any) -> bool:
     return value is None or isinstance(value, (str, int, float, bool))
 
 
-def _get_tabular_fields(items: List[Dict]) -> list[str]:
+def _flatten_item(data: Any, prefix: str = "") -> dict:
+    """Recursively flattens a nested dictionary/list into a flat dict of primitives."""
+    items = {}
+    if isinstance(data, dict):
+        for k, v in data.items():
+            new_key = f"{prefix}.{k}" if prefix else str(k)
+            items.update(_flatten_item(v, new_key))
+    elif isinstance(data, list):
+        for i, v in enumerate(data):
+            new_key = f"{prefix}.{i}" if prefix else str(i)
+            items.update(_flatten_item(v, new_key))
+    else:
+        if not _is_primitive(data):
+            raise EncodeError(f"Cannot flatten non-primitive value of type {type(data)}")
+        items[prefix] = data
+    return items
+
+
+def _check_tabular(items: list) -> tuple[list[str], list[dict]]:
     """
-    Check if a list of dicts can be a tabular array.
-    Returns the list of field names if yes, empty list if no.
-    Requirements:
-    - All elements must be objects
-    - All objects must have the exact same keys
-    - All values must be primitives
+    Check if a list can be a tabular array (using flattening).
+    Returns (fields, flattened_items). If it cannot, returns ([], [])
     """
     if not items:
-        return []
+        return [], []
 
-    # Get the keys of the first object
     first_item = items[0]
     if not isinstance(first_item, dict):
-        return []
+        return [], []
 
-    fields = list(first_item.keys())
-    # All keys must be strings
-    if not all(isinstance(k, str) for k in fields):
-        return []
+    try:
+        flat_items = [_flatten_item(item) for item in items]
+    except Exception:
+        return [], []
 
-    field_set = set(fields)
+    # Gather the union of all keys across all flattened objects
+    fields = []
+    field_set = set()
+    for flat_item in flat_items:
+        for k in flat_item.keys():
+            if k not in field_set:
+                fields.append(k)
+                field_set.add(k)
 
-    for item in items:
-        if not isinstance(item, dict):
-            return []
-            
-        # Must have exactly the same keys
-        if set(item.keys()) != field_set:
-            return []
-            
-        # All values must be primitive
-        if not all(_is_primitive(v) for v in item.values()):
-            return []
+    # Protect against extreme sparsity (e.g. distinct objects creating massive comma bloat)
+    total_cells = len(fields) * len(flat_items)
+    filled_cells = sum(len(fi) for fi in flat_items)
+    if total_cells > 0 and (filled_cells / total_cells) < 0.5:
+        return [], []
 
-    return fields
+    return fields, flat_items
 
 
 def _encode_row(item: dict, fields: list[str], delim: str) -> str:
-    """Encode a single object row in tabular format."""
+    """Encode a single object row in tabular format, handling missing keys sparsely."""
     parts = []
     for field in fields:
-        val = item[field]
-        parts.append(encode_primitive(val, delim))
+        if field in item:
+            val = item[field]
+            parts.append(encode_primitive(val, delim))
+        else:
+            # Leave cell entirely unquoted empty for missing fields
+            parts.append("")
     return delim.join(parts)
 
 
@@ -165,7 +183,8 @@ def _get_array_header(arr: list, delim: str) -> str:
     """Generate the TOON array header [N] or [N]{fields}."""
     length = len(arr)
     # Check if tabular
-    fields = _get_tabular_fields(arr)
+    fields, _ = _check_tabular(arr)
+    
     
     d_str = ''
     if delim == '\t': d_str = '\\t'
@@ -197,9 +216,9 @@ def _encode_array_contents(arr: list, out: list[str], content_depth: int, delim:
     pad = ' ' * (content_depth * 2)
     
     # 1. Tabular format
-    fields = _get_tabular_fields(arr)
+    fields, flat_arr = _check_tabular(arr)
     if fields:
-        for item in arr:
+        for item in flat_arr:
             row = _encode_row(item, fields, delim)
             out.append(f"{pad}{row}")
         return

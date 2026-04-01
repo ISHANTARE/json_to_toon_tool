@@ -65,8 +65,10 @@ class ConverterAPIHandler(http.server.SimpleHTTPRequestHandler):
                 
                 toon_str = mini_toon.encode(parsed_json)
                 
-                # Calc stats
+                # Calc stats — compare against both pretty and compact JSON
+                compact_str = json.dumps(parsed_json, separators=(',', ':'))
                 json_tokens = get_token_count(json_str)
+                compact_tokens = get_token_count(compact_str)
                 toon_tokens = get_token_count(toon_str)
                 json_bytes = len(json_str.encode('utf-8'))
                 toon_bytes = len(toon_str.encode('utf-8'))
@@ -76,9 +78,12 @@ class ConverterAPIHandler(http.server.SimpleHTTPRequestHandler):
                     "resultText": toon_str,
                     "stats": {
                         "inputTokens": json_tokens,
+                        "compactTokens": compact_tokens,
                         "outputTokens": toon_tokens,
                         "tokenSavings": json_tokens - toon_tokens,
                         "tokenSavingsPct": round(((json_tokens - toon_tokens) / json_tokens * 100) if json_tokens else 0, 1),
+                        "tokenSavingsVsCompact": compact_tokens - toon_tokens,
+                        "tokenSavingsPctVsCompact": round(((compact_tokens - toon_tokens) / compact_tokens * 100) if compact_tokens else 0, 1),
                         "inputBytes": json_bytes,
                         "outputBytes": toon_bytes,
                         "byteSavingsPct": round(((json_bytes - toon_bytes) / json_bytes * 100) if json_bytes else 0, 1)
